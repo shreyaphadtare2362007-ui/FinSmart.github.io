@@ -1,0 +1,543 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<title>FinSmart Digital</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#ffffff;--surface:#f7f8fa;--border:#e5e7eb;
+  --text:#1f2328;--muted:#57606a;--accent:#3b82d4;
+  --secondary:#7c5cd8;--warn:#e6a817;--danger:#dc2626;
+  --success:#16a34a;--radius:8px;
+}
+html,body{height:100%;font-family:-apple-system,"Segoe UI",system-ui,sans-serif;font-size:14px;line-height:1.6;background:var(--bg);color:var(--text)}
+
+/* ── Layout ── */
+.app{display:flex;flex-direction:column;height:100vh;max-width:480px;margin:0 auto;border-left:1px solid var(--border);border-right:1px solid var(--border);background:var(--bg)}
+
+/* ── Top Bar ── */
+.topbar{background:var(--accent);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.topbar-logo{width:36px;height:36px;background:rgba(255,255,255,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.topbar-title{font-size:16px;font-weight:700}
+.topbar-sub{font-size:11px;opacity:.85}
+
+/* ── Bottom Nav ── */
+.bottom-nav{display:flex;border-top:1px solid var(--border);flex-shrink:0;background:var(--bg)}
+.nav-btn{flex:1;padding:10px 4px 8px;border:none;background:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;color:var(--muted);font-family:inherit;transition:color .15s}
+.nav-btn.active{color:var(--accent)}
+.nav-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* ── Screens ── */
+.screen{display:none;flex:1;overflow-y:auto;flex-direction:column}
+.screen.active{display:flex}
+
+/* ── Chat Screen ── */
+.chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.msg{max-width:86%;display:flex;flex-direction:column;gap:3px}
+.msg.bot{align-self:flex-start}
+.msg.user{align-self:flex-end}
+.msg-bubble{padding:10px 14px;border-radius:14px;font-size:13.5px;line-height:1.5}
+.msg.bot .msg-bubble{background:var(--surface);border:1px solid var(--border);border-bottom-left-radius:4px;color:var(--text)}
+.msg.user .msg-bubble{background:var(--accent);color:#fff;border-bottom-right-radius:4px}
+.msg-time{font-size:10px;color:var(--muted);padding:0 4px}
+.msg.user .msg-time{text-align:right}
+.chat-input-row{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--border);flex-shrink:0;align-items:flex-end}
+.chat-input{flex:1;border:1px solid var(--border);border-radius:20px;padding:9px 16px;font-size:13.5px;font-family:inherit;resize:none;outline:none;max-height:100px;background:var(--surface)}
+.chat-input:focus{border-color:var(--accent)}
+.send-btn{width:38px;height:38px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.send-btn svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.quick-chips{display:flex;gap:7px;padding:8px 14px 0;flex-wrap:wrap;flex-shrink:0}
+.chip{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:12px;cursor:pointer;color:var(--text);white-space:nowrap}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+.tag{display:inline-block;padding:1px 7px;border-radius:10px;font-size:11px;font-weight:600;margin-bottom:4px}
+.tag.info{background:#e0edff;color:#1a56c4}
+.tag.warn{background:#fff3cd;color:#7d5a00}
+.tag.safe{background:#dcfce7;color:#166534}
+.tag.danger{background:#fee2e2;color:#991b1b}
+
+/* ── Tools Screen (EMI + Budget) ── */
+.tools-scroll{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:16px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+.card h3{font-size:14px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card h3 span{font-size:18px}
+label{font-size:12px;color:var(--muted);display:block;margin-bottom:4px;margin-top:10px}
+label:first-of-type{margin-top:0}
+input[type=number],input[type=range]{width:100%;border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:13px;font-family:inherit;background:var(--bg);outline:none}
+input[type=number]:focus{border-color:var(--accent)}
+input[type=range]{padding:4px 0;border:none;accent-color:var(--accent)}
+.calc-btn{width:100%;margin-top:14px;background:var(--accent);color:#fff;border:none;border-radius:6px;padding:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
+.calc-btn:hover{background:#2563c0}
+.result-box{margin-top:12px;background:#fff;border:1px solid var(--border);border-radius:6px;padding:12px;display:none}
+.result-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:13px}
+.result-row:last-child{border-bottom:none;font-weight:700;color:var(--accent)}
+.result-box.show{display:block}
+.range-val{font-size:13px;font-weight:600;color:var(--accent);text-align:right;margin-top:2px}
+.budget-cats{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.budget-cat-row{display:flex;align-items:center;gap:8px}
+.budget-cat-row label{flex:1;margin:0;font-size:12.5px;color:var(--text)}
+.budget-cat-row input{width:100px;flex-shrink:0}
+.budget-bar-wrap{height:10px;background:#e5e7eb;border-radius:10px;overflow:hidden;margin-top:8px}
+.budget-bar{height:100%;border-radius:10px;background:var(--accent);transition:width .3s}
+.budget-bar.over{background:var(--danger)}
+.budget-summary{font-size:12.5px;color:var(--muted);margin-top:4px}
+
+/* ── Fraud Screen ── */
+.fraud-scroll{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.fraud-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.fraud-header{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;user-select:none}
+.fraud-header .ficon{font-size:20px;flex-shrink:0}
+.fraud-header h4{font-size:13.5px;font-weight:700;flex:1}
+.fraud-header .chevron{color:var(--muted);font-size:12px;transition:transform .2s}
+.fraud-card.open .chevron{transform:rotate(180deg)}
+.fraud-body{display:none;padding:0 14px 14px;font-size:13px}
+.fraud-card.open .fraud-body{display:block}
+.fraud-section{margin-top:10px}
+.fraud-section strong{display:block;font-size:12px;color:var(--accent);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+.fraud-section ul{padding-left:16px;color:var(--text)}
+.fraud-section ul li{margin-bottom:3px}
+.fraud-section p{color:var(--muted)}
+.hotline{background:#fff3cd;border:1px solid #f5d89e;border-radius:6px;padding:10px 12px;font-size:12.5px;margin-top:8px;color:#7d5a00}
+.hotline strong{color:#b45309}
+
+/* ── Schemes Screen ── */
+.schemes-scroll{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.scheme-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.scheme-header{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;user-select:none}
+.scheme-header .sicon{width:34px;height:34px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.scheme-header h4{font-size:13.5px;font-weight:700;flex:1}
+.scheme-header .stag{font-size:10px;font-weight:600;border-radius:10px;padding:2px 8px}
+.scheme-card.open .chevron{transform:rotate(180deg)}
+.scheme-body{display:none;padding:0 14px 14px;font-size:13px}
+.scheme-card.open .scheme-body{display:block}
+.srow{display:flex;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:13px}
+.srow:last-child{border-bottom:none}
+.srow .sk{color:var(--muted);min-width:90px;flex-shrink:0}
+.srow .sv{color:var(--text);font-weight:500}
+.apply-btn{display:inline-block;margin-top:10px;background:var(--success);color:#fff;border-radius:6px;padding:7px 16px;font-size:12.5px;font-weight:600;text-decoration:none}
+
+/* ── Safety footer ── */
+.safety-bar{background:#fff8f0;border-top:1px solid #f5d89e;padding:9px 14px;font-size:11.5px;color:#7d5a00;text-align:center;flex-shrink:0}
+.safety-bar strong{color:#b45309}
+
+/* scrollbar */
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:4px}
+</style>
+</head>
+<body>
+<div class="app">
+
+  
+  <div class="topbar">
+    <div class="topbar-logo">💰</div>
+    <div>
+      <div class="topbar-title">FinSmart Digital</div>
+      <div class="topbar-sub">IBM Granite + RAG · Financial Literacy Agent</div>
+    </div>
+  </div>
+
+  
+  <div class="screen active" id="screen-chat">
+    <div class="quick-chips">
+      <div class="chip" data-q="What is UPI?">What is UPI?</div>
+      <div class="chip" data-q="How to avoid OTP fraud?">OTP Fraud</div>
+      <div class="chip" data-q="What is CIBIL score?">CIBIL Score</div>
+      <div class="chip" data-q="Tell me about Mudra Loan">Mudra Loan</div>
+    </div>
+    <div class="chat-messages" id="chatMessages">
+      <div class="msg bot">
+        <div class="msg-bubble">
+          <span class="tag info">FinSmart Digital</span><br />
+          Namaste! 🙏 I'm your AI-powered Financial Literacy Agent.<br /><br />
+          I can help you with:<br />
+          • 💳 UPI, NEFT, IMPS, Banking<br />
+          • 🛡️ Fraud Detection &amp; Alerts<br />
+          • 📊 EMI &amp; Budget Calculator<br />
+          • 🏛️ Government Schemes<br />
+          • 📚 Personal Finance Coaching<br /><br />
+          Ask me anything in English, Hindi, or Marathi!
+        </div>
+        <div class="msg-time">Now</div>
+      </div>
+    </div>
+    <div class="chat-input-row">
+      <textarea class="chat-input" id="chatInput"></textarea>
+      <button class="send-btn" id="sendBtn">
+        <svg><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+      </button>
+    </div>
+    <div class="safety-bar"><strong>🔒 Never share OTP, UPI PIN, CVV, or banking passwords with anyone.</strong></div>
+  </div>
+
+  
+  <div class="screen" id="screen-tools">
+    <div class="tools-scroll">
+
+      
+      <div class="card">
+        <h3><span>🧮</span> EMI Calculator</h3>
+        <label>Loan Amount (₹)</label>
+        <input type="number" id="loanAmt" />
+        <label>Annual Interest Rate (%)</label>
+        <div id="rateVal" class="range-val">8.5%</div>
+        <input type="range" id="rateRange" />
+        <label>Loan Tenure (Months)</label>
+        <div id="tenureVal" class="range-val">60 months (5 years)</div>
+        <input type="range" id="tenureRange" />
+        <button class="calc-btn" id="emiCalcBtn">Calculate EMI</button>
+        <div class="result-box" id="emiResult">
+          <div class="result-row"><span>Monthly EMI</span><span id="r-emi">—</span></div>
+          <div class="result-row"><span>Total Interest</span><span id="r-int">—</span></div>
+          <div class="result-row"><span>Total Payment</span><span id="r-total">—</span></div>
+        </div>
+      </div>
+
+      
+      <div class="card">
+        <h3><span>📊</span> Monthly Budget Planner</h3>
+        <label>Monthly Income (₹)</label>
+        <input type="number" id="income" />
+        <div class="budget-cats">
+          <div style="font-size:12px;color:var(--muted);margin-top:6px">Enter monthly expenses (₹)</div>
+          <div class="budget-cat-row"><label>🏠 Rent / Housing</label><input type="number" id="b-rent" /></div>
+          <div class="budget-cat-row"><label>🛒 Groceries &amp; Food</label><input type="number" id="b-food" /></div>
+          <div class="budget-cat-row"><label>🚌 Transport</label><input type="number" id="b-transport" /></div>
+          <div class="budget-cat-row"><label>💡 Utilities &amp; Bills</label><input type="number" id="b-bills" /></div>
+          <div class="budget-cat-row"><label>🎓 Education / EMI</label><input type="number" id="b-emi" /></div>
+          <div class="budget-cat-row"><label>🎉 Entertainment</label><input type="number" id="b-fun" /></div>
+          <div class="budget-cat-row"><label>🏥 Health / Insurance</label><input type="number" id="b-health" /></div>
+          <div class="budget-cat-row"><label>💰 Savings / Investment</label><input type="number" id="b-save" /></div>
+        </div>
+        <button class="calc-btn" id="budgetCalcBtn">Analyse Budget</button>
+        <div class="result-box" id="budgetResult">
+          <div class="result-row"><span>Total Income</span><span id="br-income">—</span></div>
+          <div class="result-row"><span>Total Expenses</span><span id="br-exp">—</span></div>
+          <div class="result-row"><span>Savings Rate</span><span id="br-rate">—</span></div>
+          <div class="result-row"><span>Balance</span><span id="br-bal">—</span></div>
+          <div id="budget-advice" style="margin-top:10px;font-size:12.5px;padding:8px;border-radius:6px;background:#f0f4ff;color:#1a56c4"></div>
+        </div>
+      </div>
+
+      
+      <div class="card">
+        <h3><span>📈</span> Simple Interest Calculator</h3>
+        <label>Principal Amount (₹)</label>
+        <input type="number" id="si-p" />
+        <label>Annual Interest Rate (%)</label>
+        <input type="number" id="si-r" />
+        <label>Time (Years)</label>
+        <input type="number" id="si-t" />
+        <button class="calc-btn" id="siCalcBtn">Calculate</button>
+        <div class="result-box" id="siResult">
+          <div class="result-row"><span>Simple Interest</span><span id="si-res">—</span></div>
+          <div class="result-row"><span>Maturity Amount</span><span id="si-mat">—</span></div>
+        </div>
+      </div>
+
+      <div style="height:8px"></div>
+    </div>
+  </div>
+
+  
+  <div class="screen" id="screen-fraud">
+    <div class="fraud-scroll">
+      <div style="font-size:13px;color:var(--muted);padding:4px 0 8px">Tap a scam type to learn how to protect yourself.</div>
+
+      
+      <div class="fraud-card" id="fc-otp">
+        <div class="fraud-header">
+          <div class="ficon">📲</div>
+          <h4>OTP Fraud</h4>
+          <span class="tag danger">High Risk</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="fraud-body">
+          <div class="fraud-section"><strong>How It Works</strong><p>Fraudster calls posing as bank/Govt official and tricks you into sharing the OTP received on your phone to "verify" your account.</p></div>
+          <div class="fraud-section"><strong>Warning Signs</strong><ul><li>Unsolicited call asking for OTP</li><li>Urgency — "account will be blocked"</li><li>Caller claims to be RBI / bank official</li></ul></div>
+          <div class="fraud-section"><strong>Prevention</strong><ul><li>Never share OTP with anyone</li><li>RBI/banks NEVER ask for OTP on call</li><li>Hang up immediately</li></ul></div>
+          <div class="fraud-section"><strong>Immediate Action</strong><ul><li>Block your card via bank app</li><li>Call bank helpline immediately</li><li>File complaint at cybercrime.gov.in</li></ul></div>
+          <div class="hotline">🚨 Cyber Fraud Helpline: <strong>1930</strong> | cybercrime.gov.in</div>
+        </div>
+      </div>
+
+      <div class="fraud-card" id="fc-qr">
+        <div class="fraud-header">
+          <div class="ficon">📷</div>
+          <h4>Fake QR Code Scam</h4>
+          <span class="tag warn">Medium Risk</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="fraud-body">
+          <div class="fraud-section"><strong>How It Works</strong><p>Fraudster pastes a malicious QR sticker over a legitimate shop QR. Payment goes to fraudster, not the merchant.</p></div>
+          <div class="fraud-section"><strong>Warning Signs</strong><ul><li>QR code sticker pasted on top</li><li>Merchant name doesn't match on UPI confirmation</li><li>"Scan to receive money" — QR codes only SEND money</li></ul></div>
+          <div class="fraud-section"><strong>Prevention</strong><ul><li>Always verify merchant name on UPI confirmation screen</li><li>Never scan QR to receive money — QR only sends</li><li>Check for stickers placed over original QR</li></ul></div>
+          <div class="hotline">🚨 Report to NPCI: <strong>18001201740</strong></div>
+        </div>
+      </div>
+
+      <div class="fraud-card" id="fc-kyc">
+        <div class="fraud-header">
+          <div class="ficon">🪪</div>
+          <h4>KYC / Account Freeze Scam</h4>
+          <span class="tag danger">High Risk</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="fraud-body">
+          <div class="fraud-section"><strong>How It Works</strong><p>You receive SMS/WhatsApp saying "Complete KYC or your account will be blocked." Link leads to a fake website that steals your banking credentials.</p></div>
+          <div class="fraud-section"><strong>Warning Signs</strong><ul><li>Suspicious link in SMS/WhatsApp</li><li>Urgency to act within hours</li><li>Asks for Aadhaar, PAN, OTP on the same page</li></ul></div>
+          <div class="fraud-section"><strong>Prevention</strong><ul><li>Banks do NOT send KYC links via SMS/WhatsApp</li><li>Visit branch directly for KYC updates</li><li>Check URL carefully — look for HTTPS</li></ul></div>
+          <div class="hotline">🚨 Report phishing: <strong>report.phishing@rbi.org.in</strong></div>
+        </div>
+      </div>
+
+      <div class="fraud-card" id="fc-sim">
+        <div class="fraud-header">
+          <div class="ficon">📡</div>
+          <h4>SIM Swap Fraud</h4>
+          <span class="tag danger">High Risk</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="fraud-body">
+          <div class="fraud-section"><strong>How It Works</strong><p>Fraudster convinces your telecom operator to issue a new SIM with your number. They then receive all your OTPs and drain your bank account.</p></div>
+          <div class="fraud-section"><strong>Warning Signs</strong><ul><li>Your mobile signal suddenly disappears</li><li>Calls/SMS stop working</li><li>Unexpected bank alerts about transactions</li></ul></div>
+          <div class="fraud-section"><strong>Prevention</strong><ul><li>Never share your Aadhaar/address with unknown callers</li><li>Enable SIM lock with your telecom provider</li><li>Set transaction alerts via email too</li></ul></div>
+          <div class="fraud-section"><strong>Immediate Action</strong><ul><li>Call telecom operator immediately to block SIM</li><li>Call bank to freeze account</li><li>File FIR at police station</li></ul></div>
+          <div class="hotline">🚨 Helpline: <strong>1930</strong> | cybercrime.gov.in</div>
+        </div>
+      </div>
+
+      <div class="fraud-card" id="fc-invest">
+        <div class="fraud-header">
+          <div class="ficon">💹</div>
+          <h4>Investment / Ponzi Scam</h4>
+          <span class="tag danger">High Risk</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="fraud-body">
+          <div class="fraud-section"><strong>How It Works</strong><p>Telegram/WhatsApp groups promise "guaranteed 30–50% returns" on investments. Initial small returns build trust, then large sums are taken and the fraudster disappears.</p></div>
+          <div class="fraud-section"><strong>Warning Signs</strong><ul><li>Guaranteed high returns (no investment guarantees returns)</li><li>Pressure to recruit others</li><li>Not registered with SEBI</li><li>Requests payment in crypto or wallets</li></ul></div>
+          <div class="fraud-section"><strong>Prevention</strong><ul><li>Verify SEBI registration at sebi.gov.in</li><li>Never invest based on Telegram tips</li><li>If it sounds too good — it's a scam</li></ul></div>
+          <div class="hotline">🚨 Report to SEBI SCORES: <strong>scores.gov.in</strong> | 1800227575</div>
+        </div>
+      </div>
+
+      <div class="fraud-card" id="fc-deepfake">
+        <div class="fraud-header">
+          <div class="ficon">🤖</div>
+          <h4>AI Voice / Deepfake Scam</h4>
+          <span class="tag warn">Emerging Threat</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="fraud-body">
+          <div class="fraud-section"><strong>How It Works</strong><p>AI clones the voice of your family member or boss using social media audio. Calls you urgently requesting a money transfer for an "emergency."</p></div>
+          <div class="fraud-section"><strong>Warning Signs</strong><ul><li>Unusual urgency in voice call</li><li>Slight robotic tone or unnatural pauses</li><li>Request for immediate wire transfer</li></ul></div>
+          <div class="fraud-section"><strong>Prevention</strong><ul><li>Hang up and call back on the known number</li><li>Establish a secret family code word</li><li>Never transfer money without in-person/video verification</li></ul></div>
+          <div class="hotline">🚨 Report: <strong>cybercrime.gov.in</strong> | Helpline: 1930</div>
+        </div>
+      </div>
+
+      <div class="fraud-card" id="fc-screen">
+        <div class="fraud-header">
+          <div class="ficon">🖥️</div>
+          <h4>Screen Sharing App Scam</h4>
+          <span class="tag danger">High Risk</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="fraud-body">
+          <div class="fraud-section"><strong>How It Works</strong><p>Fraudster posing as "bank customer care" asks you to install AnyDesk or TeamViewer. Once installed, they view your banking app and steal credentials/funds.</p></div>
+          <div class="fraud-section"><strong>Warning Signs</strong><ul><li>Customer care asking to install any app</li><li>Requests for screen share access</li><li>Unknown person guides you step by step</li></ul></div>
+          <div class="fraud-section"><strong>Prevention</strong><ul><li>Banks NEVER ask you to install screen-sharing apps</li><li>Hang up immediately</li><li>Uninstall app &amp; change all passwords at once</li></ul></div>
+          <div class="hotline">🚨 Helpline: <strong>1930</strong> | Report: cybercrime.gov.in</div>
+        </div>
+      </div>
+
+      <div style="height:8px"></div>
+    </div>
+  </div>
+
+  
+  <div class="screen" id="screen-schemes">
+    <div class="schemes-scroll">
+      <div style="font-size:13px;color:var(--muted);padding:4px 0 8px">Government financial schemes — tap to see eligibility, benefits &amp; how to apply.</div>
+
+      <div class="scheme-card">
+        <div class="scheme-header">
+          <div class="sicon">🏦</div>
+          <h4>PM Jan Dhan Yojana (PMJDY)</h4>
+          <span class="tag safe" style="margin-left:auto">Banking</span>
+          <span class="chevron" style="margin-left:8px;color:var(--muted)">▼</span>
+        </div>
+        <div class="scheme-body">
+          <div class="srow"><span class="sk">Eligibility</span><span class="sv">Any Indian citizen above 10 years, without a bank account</span></div>
+          <div class="srow"><span class="sk">Benefits</span><span class="sv">Zero-balance A/C · RuPay card · ₹1L accident cover · ₹30K life cover · overdraft up to ₹10,000</span></div>
+          <div class="srow"><span class="sk">How to Apply</span><span class="sv">Visit any bank branch with Aadhaar + passport photo</span></div>
+          <div class="srow"><span class="sk">Source</span><span class="sv">pmjdy.gov.in (Ministry of Finance)</span></div>
+          <a class="apply-btn" href="https://pmjdy.gov.in" target="_blank">Visit Official Site →</a>
+        </div>
+      </div>
+
+      <div class="scheme-card">
+        <div class="scheme-header">
+          <div class="sicon">👴</div>
+          <h4>Atal Pension Yojana (APY)</h4>
+          <span class="tag info" style="margin-left:auto">Pension</span>
+          <span class="chevron" style="margin-left:8px;color:var(--muted)">▼</span>
+        </div>
+        <div class="scheme-body">
+          <div class="srow"><span class="sk">Eligibility</span><span class="sv">Indian citizens aged 18–40, with a savings bank account</span></div>
+          <div class="srow"><span class="sk">Benefits</span><span class="sv">Guaranteed pension ₹1,000–₹5,000/month after age 60</span></div>
+          <div class="srow"><span class="sk">Contribution</span><span class="sv">As low as ₹42/month (depends on age &amp; pension amount)</span></div>
+          <div class="srow"><span class="sk">How to Apply</span><span class="sv">Through your bank branch, net banking, or mobile banking app</span></div>
+          <div class="srow"><span class="sk">Source</span><span class="sv">npscra.nsdl.co.in (PFRDA)</span></div>
+          <a class="apply-btn" href="https://www.npscra.nsdl.co.in" target="_blank">Visit Official Site →</a>
+        </div>
+      </div>
+
+      <div class="scheme-card">
+        <div class="scheme-header">
+          <div class="sicon">❤️</div>
+          <h4>PMJJBY — Life Insurance</h4>
+          <span class="tag info" style="margin-left:auto">Insurance</span>
+          <span class="chevron" style="margin-left:8px;color:var(--muted)">▼</span>
+        </div>
+        <div class="scheme-body">
+          <div class="srow"><span class="sk">Eligibility</span><span class="sv">Age 18–50, savings bank account holder</span></div>
+          <div class="srow"><span class="sk">Cover</span><span class="sv">₹2 lakh life insurance cover (death due to any cause)</span></div>
+          <div class="srow"><span class="sk">Premium</span><span class="sv">₹436/year (auto-debited from bank account)</span></div>
+          <div class="srow"><span class="sk">How to Apply</span><span class="sv">Enroll via your bank branch, net banking, or SMS</span></div>
+          <div class="srow"><span class="sk">Source</span><span class="sv">jansuraksha.gov.in (Ministry of Finance)</span></div>
+          <a class="apply-btn" href="https://jansuraksha.gov.in" target="_blank">Visit Official Site →</a>
+        </div>
+      </div>
+
+      <div class="scheme-card">
+        <div class="scheme-header">
+          <div class="sicon">🛡️</div>
+          <h4>PMSBY — Accident Insurance</h4>
+          <span class="tag info" style="margin-left:auto">Insurance</span>
+          <span class="chevron" style="margin-left:8px;color:var(--muted)">▼</span>
+        </div>
+        <div class="scheme-body">
+          <div class="srow"><span class="sk">Eligibility</span><span class="sv">Age 18–70, savings bank account holder</span></div>
+          <div class="srow"><span class="sk">Cover</span><span class="sv">₹2L for accidental death · ₹1L for partial disability</span></div>
+          <div class="srow"><span class="sk">Premium</span><span class="sv">Only ₹20/year</span></div>
+          <div class="srow"><span class="sk">How to Apply</span><span class="sv">Bank branch, net banking, or SMS to bank</span></div>
+          <a class="apply-btn" href="https://jansuraksha.gov.in" target="_blank">Visit Official Site →</a>
+        </div>
+      </div>
+
+      <div class="scheme-card">
+        <div class="scheme-header">
+          <div class="sicon">👧</div>
+          <h4>Sukanya Samriddhi Yojana</h4>
+          <span class="tag safe" style="margin-left:auto">Savings</span>
+          <span class="chevron" style="margin-left:8px;color:var(--muted)">▼</span>
+        </div>
+        <div class="scheme-body">
+          <div class="srow"><span class="sk">Eligibility</span><span class="sv">Girl child below 10 years; opened by parent/guardian</span></div>
+          <div class="srow"><span class="sk">Interest Rate</span><span class="sv">~8.2% p.a. (revised quarterly by Govt)</span></div>
+          <div class="srow"><span class="sk">Min Deposit</span><span class="sv">₹250/year · Max ₹1.5L/year · Tenure 21 years</span></div>
+          <div class="srow"><span class="sk">Tax Benefit</span><span class="sv">EEE — Exempt at deposit, interest, and maturity</span></div>
+          <div class="srow"><span class="sk">How to Apply</span><span class="sv">Post Office or authorised bank branch with birth certificate</span></div>
+          <a class="apply-btn" href="https://www.indiapost.gov.in" target="_blank">Visit Post Office →</a>
+        </div>
+      </div>
+
+      <div class="scheme-card">
+        <div class="scheme-header">
+          <div class="sicon">🏪</div>
+          <h4>Mudra Loan (PMMY)</h4>
+          <span class="tag warn" style="margin-left:auto">Business</span>
+          <span class="chevron" style="margin-left:8px;color:var(--muted)">▼</span>
+        </div>
+        <div class="scheme-body">
+          <div class="srow"><span class="sk">Eligibility</span><span class="sv">Any Indian citizen with a non-farm micro/small business plan</span></div>
+          <div class="srow"><span class="sk">Loan Tiers</span><span class="sv">Shishu: up to ₹50K · Kishore: ₹50K–5L · Tarun: ₹5L–10L</span></div>
+          <div class="srow"><span class="sk">Collateral</span><span class="sv">No collateral required</span></div>
+          <div class="srow"><span class="sk">How to Apply</span><span class="sv">Bank/NBFC branch, or apply online at mudra.org.in</span></div>
+          <a class="apply-btn" href="https://www.mudra.org.in" target="_blank">Apply at mudra.org.in →</a>
+        </div>
+      </div>
+
+      <div class="scheme-card">
+        <div class="scheme-header">
+          <div class="sicon">🚀</div>
+          <h4>Stand-Up India</h4>
+          <span class="tag warn" style="margin-left:auto">Business</span>
+          <span class="chevron" style="margin-left:8px;color:var(--muted)">▼</span>
+        </div>
+        <div class="scheme-body">
+          <div class="srow"><span class="sk">Eligibility</span><span class="sv">SC/ST entrepreneurs or Women entrepreneurs; greenfield enterprise</span></div>
+          <div class="srow"><span class="sk">Loan Amount</span><span class="sv">₹10 lakh to ₹1 crore</span></div>
+          <div class="srow"><span class="sk">Tenure</span><span class="sv">Up to 7 years (with moratorium of 18 months)</span></div>
+          <div class="srow"><span class="sk">How to Apply</span><span class="sv">standupmitra.in portal or any scheduled commercial bank</span></div>
+          <a class="apply-btn" href="https://www.standupmitra.in" target="_blank">Apply at standupmitra.in →</a>
+        </div>
+      </div>
+
+      <div style="height:8px"></div>
+    </div>
+  </div>
+
+  
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-screen="chat">
+      <svg><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"></path></svg>
+      Chat
+    </button>
+    <button class="nav-btn" data-screen="tools">
+      <svg><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+      Calculators
+    </button>
+    <button class="nav-btn" data-screen="fraud">
+      <svg><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+      Fraud Guide
+    </button>
+    <button class="nav-btn" data-screen="schemes">
+      <svg><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+      Schemes
+    </button>
+  </nav>
+
+</div>
+
+
+
+<script>
+document.querySelectorAll('.nav-btn').forEach(btn=>{
+ btn.onclick=()=>{
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+btn.dataset.screen).classList.add('active');
+ };
+});
+document.querySelectorAll('.fraud-header,.scheme-header').forEach(h=>{
+ h.onclick=()=>h.parentElement.classList.toggle('open');
+});
+function fmt(n){return '₹'+Number(n).toLocaleString('en-IN',{maximumFractionDigits:2});}
+const rr=document.getElementById('rateRange'); if(rr){rr.min=1;rr.max=20;rr.step=.1;rr.value=8.5;
+const tr=document.getElementById('tenureRange');tr.min=6;tr.max=360;tr.value=60;
+function upd(){rateVal.textContent=rr.value+'%';tenureVal.textContent=tr.value+' months';}
+upd(); rr.oninput=tr.oninput=upd;
+emiCalcBtn.onclick=()=>{let P=+loanAmt.value,r=rr.value/1200,n=+tr.value;if(!P)return;
+let e=P*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);let t=e*n,i=t-P;
+emiResult.classList.add('show');r_emi.textContent=fmt(e);r_int.textContent=fmt(i);r_total.textContent=fmt(t);};
+}
+budgetCalcBtn.onclick=()=>{let inc=+income.value||0;
+let ids=['b-rent','b-food','b-transport','b-bills','b-emi','b-fun','b-health','b-save'];
+let exp=ids.reduce((a,id)=>a+(+document.getElementById(id).value||0),0);
+let bal=inc-exp,rate=inc?((bal/inc)*100):0;
+budgetResult.classList.add('show');
+br_income.textContent=fmt(inc);br_exp.textContent=fmt(exp);br_bal.textContent=fmt(bal);br_rate.textContent=rate.toFixed(1)+'%';
+document.getElementById('budget-advice').textContent=bal>=0?'Good budgeting!':'Expenses exceed income.';
+};
+siCalcBtn.onclick=()=>{let p=+document.getElementById('si-p').value,r=+document.getElementById('si-r').value,t=+document.getElementById('si-t').value;
+let si=p*r*t/100;siResult.classList.add('show');si_res.textContent=fmt(si);si_mat.textContent=fmt(p+si);};
+const ans={'what is upi?':'UPI is an instant payment system.','how to avoid otp fraud?':'Never share OTP with anyone.','what is cibil score?':'CIBIL score ranges from 300-900.','tell me about mudra loan':'Mudra loans support small businesses.'};
+function add(text,cls){let d=document.createElement('div');d.className='msg '+cls;d.innerHTML='<div class="msg-bubble">'+text+'</div><div class="msg-time">Now</div>';chatMessages.appendChild(d);chatMessages.scrollTop=chatMessages.scrollHeight;}
+sendBtn.onclick=()=>{let q=chatInput.value.trim();if(!q)return;add(q,'user');chatInput.value='';let a=ans[q.toLowerCase()]||'Thanks! This is a demo response.';setTimeout(()=>add(a,'bot'),300);};
+document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{chatInput.value=c.dataset.q;sendBtn.click();});
+</script></body>
+</html>
